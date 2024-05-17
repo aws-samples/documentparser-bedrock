@@ -1,5 +1,5 @@
 
-# Project Title
+# GenAI Document Parser
 
  
 Context:
@@ -9,8 +9,10 @@ IDP is being seen as a very common use case amongst customers. While Textract an
 
 
  
-## FeaturesKey Features:
+## Key Features:
 PDF Upload: Users can upload bank statements in PDF format directly to the application. In this demo we have added some sample bank statements.
 Data Extraction: The parser extracts summary information, transaction details, and aggregate metrics from the bank statements.
 Output Formats: Extracted data is presented in both JSON and tabular formats for easy analysis and integration with other systems.
 Efficiency: The automated parsing process eliminates the need for manual data entry, saving time and reducing errors.
+
+Run: python3 -m streamlit run analyzer_streamlit.py and then upload the bank statements or Identity documents.
