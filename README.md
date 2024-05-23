@@ -1,18 +1,41 @@
 
 # GenAI Document Parser
 
- 
-Context:
- 
+
+## Context: 
 IDP is being seen as a very common use case amongst customers. While Textract and other OCR technologies work well with simpler documents where format remains static (such as Tax Statements) but becomes a problem for more complex documents with varying formats (such as Bank Statements and Invoices). A lot of customers struggle with accuracy, maintenance of complex post processing rules/models and accuracy. Additional challenge is support for non-English languages. The vision capabilities of Claude 3 have been seen to be working well especially for complex documents of English as well as Non-English languages.
  
-
-
  
 ## Key Features:
-PDF Upload: Users can upload bank statements in PDF format directly to the application. In this demo we have added some sample bank statements.
-Data Extraction: The parser extracts summary information, transaction details, and aggregate metrics from the bank statements.
-Output Formats: Extracted data is presented in both JSON and tabular formats for easy analysis and integration with other systems.
-Efficiency: The automated parsing process eliminates the need for manual data entry, saving time and reducing errors.
+Extraction of data from banks statements: The parser extracts summary information and transaction details from the bank statements. It also reconciles closing balance with transaction details
 
-Run: python3 -m streamlit run analyzer_streamlit.py and then upload the bank statements or Identity documents.
+Extraction of data from identity documents: The parser extracts information from identity documents in many different languages. Currently it has been tested to work on English, Japanese and Arabic language documents.
+
+
+## Pre-requisites:
+Python 3.9 or above
+
+
+## How to setup:
+Clone the GIT repositry
+
+```
+git clone https://github.com/aws-samples/documentparser-bedrock
+cd documentparser-bedrock
+```
+
+Create and activate virtual environment  
+```
+python3 -m venv ./.venv
+source ./.venv/activate
+```
+
+Install dependencies
+```
+pip install -r requirements.txt
+```
+
+Run streamlit
+```
+streamlit run analyzer_streamlit.py --server.port 8080
+```
