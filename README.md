@@ -27,7 +27,7 @@ cd documentparser-bedrock
 Create and activate virtual environment  
 ```
 python3 -m venv ./.venv
-source ./.venv/activate
+source ./.venv/bin/activate
 ```
 
 Install dependencies
