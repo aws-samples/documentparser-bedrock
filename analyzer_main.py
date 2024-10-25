@@ -8,10 +8,14 @@ import fitz #for converting pdf to image
 
 bluePrintConfig = {}
 bluePrintList = ""
+bedrockModelId = "us.anthropic.claude-3-sonnet-20240229-v1:0"
+#bedrockModelId = "us.anthropic.claude-3-haiku-20240307-v1:0"
 
 def multi_page_pdf2image(pdfBytes, pdfPath, outputPath):
-   #split the multi page PDF into images if the directory does not exist already
+   #split the multi page PDF into images (up to 20 pages) if the directory does not exist already
     if not os.path.isdir(outputPath):
+        pageNo = 0
+        
         os.makedirs(outputPath)
         
         pdfStream = None
@@ -21,35 +25,37 @@ def multi_page_pdf2image(pdfBytes, pdfPath, outputPath):
             pdfStream = fitz.open(stream = pdfBytes, filetype = "pdf")
         
         for idx, page in enumerate(pdfStream):
-            pix = page.get_pixmap(dpi=100) 
-            the_page_bytes = pix.pil_tobytes(format="jpeg")
-            with open(os.path.join(outputPath, "page-%s.jpg"%idx), "wb") as outf:
-                outf.write(the_page_bytes)
+            pageNo = pageNo + 1
+            
+            if pageNo <= 20:
+                pix = page.get_pixmap(dpi=200) 
+                the_page_bytes = pix.pil_tobytes(format="jpeg")
+                with open(os.path.join(outputPath, "page-%s.jpg"%str(idx).rjust(2,'0')), "wb") as outf:
+                    outf.write(the_page_bytes)
 
-def analyzeDoc(imageConvPath, analyzerPrompt):
+def analyzeDoc(imageConvPath, specificFileName, analyzerPrompt):
     encodedImages = []
     
     #Encode the images
-    for filename in os.listdir(imageConvPath):
+    for filename in sorted(os.listdir(imageConvPath)):
         filePath = os.path.join(imageConvPath, filename)
-        if os.path.isfile(filePath) and '.jpg' in filename:
+        if os.path.isfile(filePath) and '.jpg' in filename and (filename == specificFileName or specificFileName == ""):
             with open(filePath, "rb") as f:
                 encoded_image = base64.b64encode(f.read()).decode("utf-8")
                 encodedImages.append(encoded_image)
 
-    parsedDoc = call_bedrock(modelId="anthropic.claude-3-sonnet-20240229-v1:0", maxTokens = 32768, encodedImages = encodedImages, textPrompt = analyzerPrompt)
+    parsedDoc = call_bedrock(modelId=bedrockModelId, maxTokens = 32768, encodedImages = encodedImages, textPrompt = analyzerPrompt)
     return parsedDoc
     
 def classifyDoc(pdfDocIo, pdfDocPath):
     if bluePrintList == "":
         getConfig()
         
-    #print(f"Blueprints: {bluePrintList}")
-        
     returnVal = {}
-    classificationPrompt = "classify the document type between " + bluePrintList + " and Others. Only return document type and nothing else"
-    #print(classificationPrompt)
+    subTypeClassification = {}
     
+    classificationPrompt = "classify the document type between " + bluePrintList + " and Others. Only return document type and nothing else"
+
     imageConvPath = ""
     if pdfDocPath is not None:
         imageConvPath = os.path.join(os.path.dirname(pdfDocPath), 'output_' + os.path.splitext(os.path.basename(pdfDocPath))[0], 'image_conversion/')
@@ -62,10 +68,11 @@ def classifyDoc(pdfDocIo, pdfDocPath):
     #encoding of images
     cnt = 0
     encodedImages = []
-    for filename in os.listdir(imageConvPath):
+    for filename in sorted(os.listdir(imageConvPath)):
         filePath = os.path.join(imageConvPath, filename)
         if os.path.isfile(filePath) and '.jpg' in filename:
             cnt = cnt + 1
+            print(filename)
             with open(filePath, "rb") as f:
                 encoded_image = base64.b64encode(f.read()).decode("utf-8")
     
@@ -73,10 +80,46 @@ def classifyDoc(pdfDocIo, pdfDocPath):
             if cnt == 2: #max of 2 pages for the classification:    
                 break
 
-    returnVal['docType'] = call_bedrock(modelId='anthropic.claude-3-sonnet-20240229-v1:0', maxTokens=512, encodedImages=encodedImages, textPrompt=classificationPrompt)
-    returnVal['docTypeDisplayName'] = bluePrintConfig['bluePrints'][returnVal['docType']]['displayName']
-    returnVal['textPrompt'] = bluePrintConfig['bluePrints'][returnVal['docType']]['textPrompt']
+    returnVal['docType'] = call_bedrock(modelId=bedrockModelId, maxTokens=512, encodedImages=encodedImages, textPrompt=classificationPrompt)
     
+    if returnVal['docType'] != "Others":
+        returnVal['docTypeDisplayName'] = bluePrintConfig['bluePrints'][returnVal['docType']]['displayName']
+        returnVal['docClassifierType'] = bluePrintConfig['bluePrints'][returnVal['docType']]['type']
+        returnVal['textPrompt'] = bluePrintConfig['bluePrints'][returnVal['docType']]['textPrompt']
+        
+        if returnVal['docClassifierType'] == 'multi_page':
+            returnVal['subTypeList'] = ""
+            returnVal['subTypeClassification'] = {}
+        else:
+            subTypeList = ', '.join([str(elem) for elem in list(bluePrintConfig['bluePrints'][returnVal['docType']]['textPrompt'].keys())])
+            returnVal['subTypeList'] = subTypeList
+            
+            subTypeClassification = {}
+            classificationPrompt = "classify the document type between " + subTypeList + " and Others. Only return document type and nothing else"
+            
+            #encoding of images
+            cnt = 0
+            for filename in sorted(os.listdir(imageConvPath)):
+                filePath = os.path.join(imageConvPath, filename)
+                if os.path.isfile(filePath) and '.jpg' in filename:
+                    cnt = cnt + 1
+                    with open(filePath, "rb") as f:
+                        encoded_image = base64.b64encode(f.read()).decode("utf-8")
+                        encodedImages = []
+                        encodedImages.append(encoded_image)
+                        
+                        if cnt > 5: #max of 5 pages for the sub classification:
+                            break
+                    
+                    subTypeClassification[filename] = call_bedrock(modelId=bedrockModelId, maxTokens=512, encodedImages=encodedImages, textPrompt=classificationPrompt)
+                    if subTypeClassification[filename] not in subTypeList:
+                        subTypeClassification[filename] = 'Others'
+    
+            returnVal['subTypeClassification'] = subTypeClassification
+            
+            #print(classificationPrompt)
+            print(subTypeClassification)
+        
     return(returnVal)
 
 def call_bedrock(modelId, maxTokens, encodedImages, textPrompt):
@@ -105,6 +148,8 @@ def call_bedrock(modelId, maxTokens, encodedImages, textPrompt):
 
     request_body = {
         "anthropic_version": "bedrock-2023-05-31",
+        "temperature": 0,
+        "system": "don't make any assumptions and return only accurate information",
         "max_tokens": maxTokens,
         "messages": [
             {
@@ -151,5 +196,5 @@ if __name__ == "__main__":
     docTypeOutput = classifyDoc(pdfDocIo = {'fileName': None, 'fileData': None}, pdfDocPath = "pdf_documents/70.pdf")
     print(docTypeOutput)
     
-    analyzerOutput = analyzeDoc(imageConvPath=docTypeOutput['imageConvPath'], analyzerPrompt=docTypeOutput['textPrompt'])
-    print(json.loads(analyzerOutput))
+    #analyzerOutput = analyzeDoc(imageConvPath=docTypeOutput['imageConvPath'], analyzerPrompt=docTypeOutput['textPrompt'])
+    #print(json.loads(analyzerOutput))
