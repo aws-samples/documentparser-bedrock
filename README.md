@@ -42,6 +42,10 @@ The solution uses AWS SDK for Python (Boto3) to invoke [Amazon Bedrock](https://
 ![ImageIAMAuth](/static/boto3-credentials.png)
 
 
+### Setup Access for Amazon Bedrock foundation models:
+Access to Amazon Bedrock foundation models isn't granted by default. You can request access, or modify access, to foundation models only by using the Amazon Bedrock console. The solution requires access to **Anthropic - Claude 3 Sonnet** at the minimum as it is used for classifying the documents and depending on the user selection in drop down, can be used for data extraction as well. Please enable other foundation models as per requirement. The [documentation](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html) contains step by step guide for the same.
+
+
 ### Run the application:
 Run streamlit
 ```

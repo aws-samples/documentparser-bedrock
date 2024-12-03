@@ -1,6 +1,7 @@
-botocore==1.34.71
-boto3==1.34.71
+botocore==1.35.67
+boto3==1.35.67
 PyMuPDF==1.24.0
-streamlit==1.32.2
+streamlit==1.40.1
 pandas==2.2.1
 PyYAML==6.0.1
+json-repair==0.30.2
