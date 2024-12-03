@@ -16,7 +16,7 @@ Extraction of data from identity documents: The parser extracts information from
 Python 3.9 or above
 
 
-## How to setup:
+## Setup:
 Clone the GIT repositry
 
 ```
@@ -35,6 +35,14 @@ Install dependencies
 pip install -r requirements.txt
 ```
 
+
+### IAM Authentication:
+The solution uses AWS SDK for Python (Boto3) to invoke [Amazon Bedrock](https://aws.amazon.com/bedrock/) models. It requires the configuration of AWS credentials in order to work. [Boto3 user guide](https://boto3.amazonaws.com/v1/documentation/api/latest/guide/credentials.html) has complete details on the same. Depending on the credential method, below code block in **analyzer_main.py** may need to be modified.
+
+![ImageIAMAuth](/static/boto3-credentials.png)
+
+
+### Run the application:
 Run streamlit
 ```
 streamlit run analyzer_streamlit.py --server.port 8080
