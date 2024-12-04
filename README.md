@@ -3,7 +3,7 @@
 
 
 ## Context: 
-IDP is being seen as a very common use case amongst customers. While Textract and other OCR technologies work well with simpler documents where format remains static (such as Tax Statements) but becomes a problem for more complex documents with varying formats (such as Bank Statements and Invoices). A lot of customers struggle with accuracy, maintenance of complex post processing rules/models and accuracy. Additional challenge is support for non-English languages. The vision capabilities of Claude 3 have been seen to be working well especially for complex documents of English as well as Non-English languages.
+IDP is being seen as a very common use case amongst customers. While Textract and other OCR technologies work well with simpler documents where format remains static (such as Tax Statements) but becomes a problem for more complex documents with varying formats (such as Bank Statements and Invoices). A lot of customers struggle with accuracy, maintenance of complex post processing rules/models and accuracy. Additional challenge is support for non-English languages. The vision capabilities of **Claude 3/3.5 Models from Anthropic** and **Nova models from Amazon** have been seen to be working well especially for complex documents of English as well as Non-English languages.
  
  
 ## Key Features:
