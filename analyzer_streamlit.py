@@ -18,7 +18,7 @@ def runClassifyDoc(uploaded_file):
 option = st.selectbox(
     "Which Bedrock FM would you like to use?",
     #("Claude-3-Sonnet", "Claude-3-Haiku", "Claude-3.5-Sonnet-v1", "Claude-3.5-Sonnet-v2", "Llama 3.2 90B"),
-    ("Claude-3-Sonnet", "Claude-3-Haiku", "Claude-3.5-Sonnet-v1", "Claude-3.5-Sonnet-v2"),
+    ("Claude-3-Sonnet", "Claude-3-Haiku", "Claude-3.5-Sonnet-v1", "Claude-3.5-Sonnet-v2", "Nova Pro"),
     index=3
 )
 
@@ -37,6 +37,9 @@ elif option == "Claude-3.5-Sonnet-v2":
 elif option == "Llama 3.2 90B":
     extractionModelId = "us.meta.llama3-2-90b-instruct-v1:0"
     maxTokens = 2048
+elif option == "Nova Pro":
+    extractionModelId = "us.amazon.nova-pro-v1:0"
+    maxTokens = 5120
     
 #st.write("Inference Profile Id:", extractionModelId)
         
@@ -84,8 +87,8 @@ if uploaded_file is not None:
             modelOutput = anam1.analyzeDoc(bedrockModelId = extractionModelId, maxTokens = maxTokens, imageConvPath=docTypeOutput['imageConvPath'], specificFileName = "", analyzerPrompt=docTypeOutput['textPrompt']['subType1'])
         
         if docTypeOutput['docType'] == 'bankStatement':
-            summary = json.loads(modelOutput)['summary']
-            details = json.loads(modelOutput)['transactions']
+            summary = json_repair.loads(modelOutput)['summary']
+            details = json_repair.loads(modelOutput)['transactions']
             #aggregates = json.loads(modelOutput)['aggregates']
         
             st.dataframe(summary)
