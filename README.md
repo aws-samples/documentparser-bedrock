@@ -54,6 +54,6 @@ streamlit run analyzer_streamlit.py --server.port 8080
 
 
 ## Samples:
-![Image1](/static/extraction-screenshot1.png)
-![Image2](/static/extraction-screenshot2.png)
-![Image3](/static/extraction-screenshot3.png)
+![GIF](/static/extraction-bank-statement.gif)
+![Image2](/static/extraction-identity-doc.png)
+
